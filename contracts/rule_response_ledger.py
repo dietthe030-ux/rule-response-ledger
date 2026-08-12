@@ -49,6 +49,7 @@ class RuleResponseLedger(gl.Contract):
 
     def __init__(self):
         root = gl.storage.Root.get()
+        # VERIFY-AT-STUDIO: record this runtime-derived deployer as the upgrader.
         root.upgraders.get().append(gl.message.sender_address)
 
     @gl.public.write
@@ -175,6 +176,7 @@ response_source from FINAL_RULE, RESPONSE_DOCUMENT, BOTH, NONE. Keep explanation
                 return False
 
         assessment = gl.vm.run_nondet_unsafe(evaluate, validate)
+        # VERIFY-AT-STUDIO: retain validator evidence for the finalized revision.
         _require(_valid_assessment(assessment), "INVALID_ASSESSMENT")
 
         revision_number = record["revision_count"] + 1
@@ -237,6 +239,11 @@ response_source from FINAL_RULE, RESPONSE_DOCUMENT, BOTH, NONE. Keep explanation
         return self.record_count
 
     @gl.public.view
+    def get_upgrader(self) -> str:
+        root = gl.storage.Root.get()
+        return root.upgraders.get()[0].as_hex
+
+    @gl.public.view
     def get_record_by_fingerprint(self, comment_id: str, issue_summary: str) -> str:
         fingerprint = f"{comment_id}|{issue_summary.strip().lower()}"
         _require(fingerprint in self.record_by_fingerprint, "RECORD_NOT_FOUND")
@@ -257,6 +264,8 @@ response_source from FINAL_RULE, RESPONSE_DOCUMENT, BOTH, NONE. Keep explanation
     @gl.public.write
     def upgrade(self, new_code: bytes) -> None:
         root = gl.storage.Root.get()
+        _require(gl.message.sender_address in root.upgraders.get(), "UPGRADE_NOT_AUTHORIZED")
+        # VERIFY-AT-STUDIO: rehearse replacement on a separate deployment first.
         code = root.code.get()
         code.truncate()
         code.extend(new_code)

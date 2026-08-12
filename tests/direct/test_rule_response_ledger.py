@@ -42,10 +42,22 @@ def warp(direct_vm, timestamp):
     gl.message_raw["datetime"] = timestamp
 
 
-def test_deterministic_state_machine(direct_deploy, direct_vm, direct_alice):
+def test_deterministic_state_machine(
+    direct_deploy,
+    direct_vm,
+    direct_alice,
+    direct_bob,
+    direct_owner,
+):
     direct_vm.warp("2026-08-13T00:00:00+00:00")
     ledger = direct_deploy("contracts/rule_response_ledger.py")
     warp(direct_vm, "2026-08-13T00:00:00+00:00")
+    assert ledger.get_upgrader().lower() == f"0x{direct_owner.hex()}"
+
+    direct_vm.sender = direct_bob
+    with direct_vm.expect_revert("UPGRADE_NOT_AUTHORIZED"):
+        ledger.upgrade(b"unauthorized-code")
+
     direct_vm.sender = direct_alice
 
     with direct_vm.expect_revert("COMMENT_ID_INVALID"):
@@ -156,3 +168,9 @@ def test_deterministic_state_machine(direct_deploy, direct_vm, direct_alice):
     warp(direct_vm, "2026-08-13T03:00:00+00:00")
     with direct_vm.expect_revert("ATTEMPT_LIMIT_REACHED"):
         ledger.assess_response(unresolved_id)
+
+    direct_vm.sender = direct_owner
+    rehearsal_code = b"authorized-rehearsal-code"
+    ledger.upgrade(rehearsal_code)
+    from genlayer import gl
+    assert bytes(gl.storage.Root.get().code.get()) == rehearsal_code
