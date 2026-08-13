@@ -6,6 +6,14 @@ export const STUDIO_CHAIN = {
   blockExplorerUrls: ["https://explorer-studio.genlayer.com"],
 };
 
+export function walletUiState(wallet) {
+  const address = wallet?.address || "";
+  return {
+    disconnectVisible: Boolean(address),
+    triggerLabel: address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "Connect wallet",
+  };
+}
+
 export function providerKey(detail) {
   const info = detail.info || {};
   return info.uuid || info.rdns || info.name || "legacy-provider";

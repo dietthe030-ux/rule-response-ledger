@@ -1,6 +1,24 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { collectProvider, discoverProviders, providerKey, STUDIO_CHAIN, watchProvider } from "../src/wallet.js";
+import {
+  collectProvider,
+  discoverProviders,
+  providerKey,
+  STUDIO_CHAIN,
+  walletUiState,
+  watchProvider,
+} from "../src/wallet.js";
+
+test("wallet UI exposes disconnect only for an active app connection", () => {
+  assert.deepEqual(walletUiState(null), {
+    disconnectVisible: false,
+    triggerLabel: "Connect wallet",
+  });
+  assert.deepEqual(walletUiState({ address: "0xbf9000000000000000000000000000000000b40d" }), {
+    disconnectVisible: true,
+    triggerLabel: "0xbf90…b40d",
+  });
+});
 
 test("provider announcements deduplicate without preferring MetaMask", () => {
   const first = { info: { uuid: "one", name: "Wallet A" }, provider: { request() {} } };

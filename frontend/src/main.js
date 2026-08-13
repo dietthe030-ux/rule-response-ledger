@@ -15,7 +15,7 @@ import {
   registerRecord,
   validContractAddress,
 } from "./ledger.js";
-import { connectSelectedProvider, discoverProviders, watchProvider } from "./wallet.js";
+import { connectSelectedProvider, discoverProviders, walletUiState, watchProvider } from "./wallet.js";
 import { assertFinalizedSuccess, clearPending, readPending } from "./transactions.js";
 import { TransactionStatus } from "genlayer-js/types";
 
@@ -147,15 +147,18 @@ app.innerHTML = `
     <h2 id="provider-title">Choose a provider.</h2>
     <p>The site will request an account only from the provider you select.</p>
     <div class="provider-list" id="provider-list"></div>
-    <button class="secondary" id="provider-close" type="button">Cancel</button>
+    <div class="dialog-actions">
+      <button class="secondary" id="wallet-disconnect" type="button" hidden>Disconnect</button>
+      <button class="secondary" id="provider-close" type="button">Cancel</button>
+    </div>
   </dialog>
 `;
 
 const notice = document.querySelector("#notice");
 const providerDialog = document.querySelector("#provider-dialog");
 const walletButton = document.querySelector("#wallet-button");
+const walletDisconnect = document.querySelector("#wallet-disconnect");
 
-function short(value) { return value ? `${value.slice(0, 6)}…${value.slice(-4)}` : ""; }
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
@@ -169,21 +172,27 @@ function requireWriteReady() {
   if (!deployed) throw new Error("The contract has not been deployed yet.");
   if (!wallet) throw new Error("Choose and connect a wallet provider first.");
 }
-function clearWallet(message) {
+function syncWalletUi() {
+  const state = walletUiState(wallet);
+  walletButton.textContent = state.triggerLabel;
+  walletDisconnect.hidden = !state.disconnectVisible;
+}
+function clearWallet(message, error = true) {
   stopWatchingWallet();
   stopWatchingWallet = () => {};
   wallet = null;
-  walletButton.textContent = "Connect wallet";
-  setNotice(message, true);
+  syncWalletUi();
+  setNotice(message, error);
   renderPending();
 }
 function followWallet(nextWallet) {
   stopWatchingWallet();
   wallet = nextWallet;
+  syncWalletUi();
   stopWatchingWallet = watchProvider(wallet.provider, (state) => {
     if (state.type === "account") {
       wallet = { ...wallet, address: state.address };
-      walletButton.textContent = short(state.address);
+      syncWalletUi();
       setNotice("Wallet account changed. Current identity updated.");
     } else if (state.type === "studionet") {
       clearWallet("Wallet returned to Studionet. Reconnect to authorize writes.");
@@ -214,7 +223,6 @@ function renderProviders() {
       try {
         button.disabled = true;
         followWallet(await connectSelectedProvider(detail));
-        walletButton.textContent = short(wallet.address);
         providerDialog.close();
         setNotice(`Connected ${detail.info?.name || "wallet"} on Studionet.`);
         renderPending();
@@ -229,7 +237,12 @@ function renderProviders() {
 }
 
 discoverProviders((next) => { providers = next; renderProviders(); });
+syncWalletUi();
 walletButton.addEventListener("click", () => providerDialog.showModal());
+walletDisconnect.addEventListener("click", () => {
+  clearWallet("Wallet disconnected from this app.", false);
+  providerDialog.close();
+});
 document.querySelector("#provider-close").addEventListener("click", () => providerDialog.close());
 
 document.querySelector("#comment-id").addEventListener("input", (event) => {
