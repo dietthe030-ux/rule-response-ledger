@@ -42,7 +42,7 @@ npm test
 npm run dev
 ```
 
-After deployment, copy `frontend/.env.example` to `frontend/.env` and set `VITE_CONTRACT_ADDRESS` to the real Studionet contract address. The empty example value intentionally disables writes; the project never ships a placeholder address.
+Copy `frontend/.env.example` to `frontend/.env`. It is pinned to the verified Studionet deployment at `0x18E2134c1b2D93170Aa35599a891F3785bB91f0a`.
 
 ## Verification
 
@@ -65,4 +65,6 @@ The linter wrapper uses the governed GenVM runtime under `E:\Genlayer-Tools`; it
 
 ## Release status
 
-Implementation is complete locally. The Studionet address and hosted frontend URL will be added only after the required independent review and deployment gates.
+Studionet contract: [`0x18E2134c1b2D93170Aa35599a891F3785bB91f0a`](https://explorer-studio.genlayer.com/address/0x18E2134c1b2D93170Aa35599a891F3785bB91f0a).
+
+Deployment transaction: [`0x638d99b15edae6cf2d86a345c5964d5621caf1e1081c002c72b3ee1ce199adf1`](https://explorer-studio.genlayer.com/tx/0x638d99b15edae6cf2d86a345c5964d5621caf1e1081c002c72b3ee1ce199adf1), finalized with successful execution and exact source-hash parity. The hosted frontend URL remains gated on independent review and target confirmation.
