@@ -7,6 +7,7 @@ import {
   prepareWrite,
   readPending,
   storePending,
+  submitFinalized,
 } from "../src/transactions.js";
 
 test("write preparation snapshots enabled form fields before disabling controls", () => {
@@ -59,4 +60,32 @@ test("only transient RPC failures are retried", () => {
   assert.equal(isRetryableRpcError(new Error("Failed to fetch")), true);
   assert.equal(isRetryableRpcError({ message: "unknown", cause: new Error("Rate limit exceeded") }), true);
   assert.equal(isRetryableRpcError(new Error("Execution did not finish with a return")), false);
+});
+
+test("pending UI is notified before and after the wallet returns a hash", async () => {
+  const fake = storage();
+  const original = globalThis.localStorage;
+  globalThis.localStorage = fake;
+  const updates = [];
+  try {
+    const result = await submitFinalized({
+      client: {
+        writeContract: async () => "0xabc",
+        waitForTransactionReceipt: async () => ({
+          status_name: "FINALIZED",
+          consensus_data: { leader_receipt: [{ execution_result: "SUCCESS", result: { status: "return" } }] },
+        }),
+      },
+      call: {},
+      intent: { method: "register_record" },
+      readback: async () => ({ record_id: "RRL-000001" }),
+      onPending: (pending) => updates.push(pending.hash),
+    });
+    assert.deepEqual(updates, [null, "0xabc"]);
+    assert.equal(result.hash, "0xabc");
+    assert.equal(readPending(fake), null);
+  } finally {
+    if (original === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = original;
+  }
 });

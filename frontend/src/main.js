@@ -257,14 +257,15 @@ document.querySelector("#comment-id").addEventListener("input", (event) => {
     || "Enter a valid comment ID to derive its canonical attachment URL.";
 });
 
-function renderPending() {
+function renderPending(autoReconcile = true) {
   const slot = document.querySelector("#pending-slot");
   const pending = readPending();
   if (!pending) { slot.innerHTML = ""; return; }
-  slot.innerHTML = `<aside class="pending" role="status"><div class="pending-title"><span class="spinner" aria-hidden="true"></span><strong>Pending intent: ${escapeHtml(pending.method)}</strong></div><code>${escapeHtml(pending.hash || "No transaction hash recorded")}</code><div class="form-actions"><button id="reconcile-button" type="button" ${!pending.hash || !deployed ? "disabled" : ""}>Reconcile finalized state</button><button class="secondary" id="dismiss-pending" type="button">Dismiss local intent</button></div></aside>`;
-  document.querySelector("#dismiss-pending").addEventListener("click", () => { clearPending(); renderPending(); });
+  const controls = autoReconcile ? `<div class="form-actions"><button id="reconcile-button" type="button" ${!pending.hash || !deployed ? "disabled" : ""}>Reconcile finalized state</button><button class="secondary" id="dismiss-pending" type="button">Dismiss local intent</button></div>` : "";
+  slot.innerHTML = `<aside class="pending" role="status"><div class="pending-title"><span class="spinner" aria-hidden="true"></span><strong>Pending intent: ${escapeHtml(pending.method)}</strong></div><code>${escapeHtml(pending.hash || "Waiting for wallet confirmation")}</code>${controls}</aside>`;
+  document.querySelector("#dismiss-pending")?.addEventListener("click", () => { clearPending(); renderPending(); });
   document.querySelector("#reconcile-button")?.addEventListener("click", () => startReconciliation(pending));
-  startReconciliation(pending);
+  if (autoReconcile) startReconciliation(pending);
 }
 
 function startReconciliation(pending) {
@@ -325,16 +326,16 @@ async function handleWrite(form, action, successMessage) {
 document.querySelector("#register-form").addEventListener("submit", (event) => {
   event.preventDefault();
   handleWrite(event.currentTarget, (data) => registerRecord(
-    contractAddress, wallet, data.get("commentId").trim(), data.get("issueSummary").trim(),
+    contractAddress, wallet, data.get("commentId").trim(), data.get("issueSummary").trim(), () => renderPending(false),
   ), "Record registered and read back");
 });
 document.querySelector("#bind-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  handleWrite(event.currentTarget, (data) => bindEvidence(contractAddress, wallet, data.get("recordId").trim()), "Canonical evidence bound and read back");
+  handleWrite(event.currentTarget, (data) => bindEvidence(contractAddress, wallet, data.get("recordId").trim(), () => renderPending(false)), "Canonical evidence bound and read back");
 });
 document.querySelector("#assess-form").addEventListener("submit", (event) => {
   event.preventDefault();
-  handleWrite(event.currentTarget, (data) => assessRecord(contractAddress, wallet, data.get("recordId").trim()), "Assessment revision finalized and read back");
+  handleWrite(event.currentTarget, (data) => assessRecord(contractAddress, wallet, data.get("recordId").trim(), () => renderPending(false)), "Assessment revision finalized and read back");
 });
 
 function renderRecords() {

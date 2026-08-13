@@ -47,12 +47,13 @@ export async function readRecords(address, client = publicClient) {
   return Promise.all(ids.map((id) => readRecord(address, id, client)));
 }
 
-export async function registerRecord(address, wallet, commentId, issueSummary) {
+export async function registerRecord(address, wallet, commentId, issueSummary, onPending) {
   const client = walletClient(wallet);
   const commentUrl = canonicalCommentUrl(commentId);
   return submitFinalized({
     client,
     intent: { method: "register_record", commentId, issueSummary },
+    onPending,
     call: { address, functionName: "register_record", args: [commentId, commentUrl, issueSummary], value: 0n },
     readback: async () => {
       const recordId = await client.readContract({
@@ -65,11 +66,12 @@ export async function registerRecord(address, wallet, commentId, issueSummary) {
   });
 }
 
-export async function bindEvidence(address, wallet, recordId) {
+export async function bindEvidence(address, wallet, recordId, onPending) {
   const client = walletClient(wallet);
   return submitFinalized({
     client,
     intent: { method: "bind_final_evidence", recordId },
+    onPending,
     call: {
       address,
       functionName: "bind_final_evidence",
@@ -84,12 +86,13 @@ export async function bindEvidence(address, wallet, recordId) {
   });
 }
 
-export async function assessRecord(address, wallet, recordId) {
+export async function assessRecord(address, wallet, recordId, onPending) {
   const client = walletClient(wallet);
   const before = await readRecord(address, recordId, client);
   return submitFinalized({
     client,
     intent: { method: "assess_response", recordId, previousRevisionCount: before.revision_count },
+    onPending,
     call: { address, functionName: "assess_response", args: [recordId], value: 0n },
     readback: async () => {
       const record = await readRecord(address, recordId, client);

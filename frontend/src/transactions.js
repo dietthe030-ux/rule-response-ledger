@@ -50,11 +50,14 @@ export function isRetryableRpcError(error) {
   return /failed to fetch|rate limit|rpc error|network|timed? out|timeout/i.test(text);
 }
 
-export async function submitFinalized({ client, call, intent, readback }) {
+export async function submitFinalized({ client, call, intent, readback, onPending }) {
   const pending = { ...intent, startedAt: new Date().toISOString(), hash: null };
   storePending(pending);
+  onPending?.(pending);
   const hash = await client.writeContract(call);
-  storePending({ ...pending, hash });
+  const submitted = { ...pending, hash };
+  storePending(submitted);
+  onPending?.(submitted);
   const receipt = assertFinalizedSuccess(await client.waitForTransactionReceipt({
     hash,
     status: TransactionStatus.FINALIZED,
