@@ -4,6 +4,8 @@ import { DOCKET_ID, EXPLORER, canonicalCommentUrl, parseStoredJson, validContrac
 
 test("canonical comment evidence is fixed to the docket download path", () => {
   assert.equal(canonicalCommentUrl(`${DOCKET_ID}-0066`), `https://downloads.regulations.gov/${DOCKET_ID}-0066/attachment_1.pdf`);
+  assert.equal(canonicalCommentUrl(""), "");
+  assert.equal(canonicalCommentUrl(`${DOCKET_ID}-66`), "");
 });
 
 test("only full contract addresses pass configuration validation", () => {

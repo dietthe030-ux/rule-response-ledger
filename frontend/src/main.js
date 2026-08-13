@@ -82,13 +82,13 @@ app.innerHTML = `
         <div class="workflow">
           <article class="step">
             <div><h3>Register an issue</h3><p>Name the material issue in one canonical comment attachment. This creates the durable fingerprint.</p></div>
-            <form id="register-form">
-              <label>Comment ID
-                <input id="comment-id" name="commentId" value="${DOCKET_ID}-0066" pattern="${DOCKET_ID}-[0-9]{4}" required />
-                <span class="field-note" id="comment-url">${canonicalCommentUrl(`${DOCKET_ID}-0066`)}</span>
-              </label>
-              <label>Material issue
-                <textarea name="issueSummary" minlength="20" maxlength="360" required>Whether West Virginia used enforceable reasonable-progress measures.</textarea>
+              <form id="register-form">
+                <label>Comment ID
+                  <input id="comment-id" name="commentId" placeholder="${DOCKET_ID}-0066" pattern="${DOCKET_ID}-[0-9]{4}" required />
+                  <span class="field-note" id="comment-url">Enter a valid comment ID to derive its canonical attachment URL.</span>
+                </label>
+                <label>Material issue
+                  <textarea name="issueSummary" minlength="20" maxlength="360" placeholder="Describe one material issue raised in the selected comment." required></textarea>
                 <span class="field-note">20–360 characters. The normalized text becomes part of the duplicate fingerprint.</span>
               </label>
               <div class="form-actions"><button data-write type="submit">Register record</button></div>
@@ -252,7 +252,8 @@ walletDisconnect.addEventListener("click", () => {
 document.querySelector("#provider-close").addEventListener("click", () => providerDialog.close());
 
 document.querySelector("#comment-id").addEventListener("input", (event) => {
-  document.querySelector("#comment-url").textContent = canonicalCommentUrl(event.target.value.trim());
+  document.querySelector("#comment-url").textContent = canonicalCommentUrl(event.target.value.trim())
+    || "Enter a valid comment ID to derive its canonical attachment URL.";
 });
 
 function renderPending() {

@@ -14,6 +14,7 @@ export function validContractAddress(value) {
 }
 
 export function canonicalCommentUrl(commentId) {
+  if (!new RegExp(`^${DOCKET_ID}-[0-9]{4}$`).test(commentId || "")) return "";
   return `https://downloads.regulations.gov/${commentId}/attachment_1.pdf`;
 }
 
