@@ -12,13 +12,13 @@ This document consolidates reviewer-facing source, deployment, test, and live-pa
 - Deployer/upgrader: `0x3851587431CfD3e46D1eAa77c0aDc2AD35087040`
 - Live web URL: [`https://rule-response-ledger.vercel.app`](https://rule-response-ledger.vercel.app)
 - Vercel project: `dietthe030-uxs-projects/rule-response-ledger`
-- Production deployment: `dpl_nFAPNWSSTR5NidUYcVmLkqMcn5AD`
-- Immutable deployment URL: `https://rule-response-ledger-su95yz5nz-dietthe030-uxs-projects.vercel.app`
-- Compiled main asset SHA-256: `ECB9DD727663A6B4864D8E7D51F69F2EAE91276F07ADE76BAF7F7FB3C1019DE4`
+- Production deployment: `dpl_CLP6vzdrr1Jdu1CcJhsHFZgG65dH`
+- Immutable deployment URL: `https://rule-response-ledger-83cupj5af-dietthe030-uxs-projects.vercel.app`
+- Compiled main asset SHA-256: `4B971F92E5E777FD3A3E0A05A574A2AF8A41749B10916367D4043447B4B91248`
 
 The public release commit is the branch tip named in the pre-push and final immutable evidence packages. Embedding that commit's own hash inside itself would be self-referential; the deployed contract remains byte-bound to the implementation commit and source hash above.
 
-The production deployment is `READY`. Its stable alias and immutable URL serve the same compiled asset byte-for-byte as the verified local production build (397,625 bytes), contain the main contract address and explicit app-level disconnect flow, and exclude the isolated rehearsal address. Fresh requests to `/`, `/workbench`, `/ledger`, and `/protocol` all return the SPA entry point with HTTP 200.
+The production deployment is `READY`. Its stable alias and immutable URL serve the same compiled asset byte-for-byte as the verified local production build (397,881 bytes), contain the main contract address and explicit app-level disconnect flow, and exclude the isolated rehearsal address. Registration fields start empty; placeholders are non-submittable guidance, and a canonical attachment URL appears only for a valid user-entered comment ID. Fresh requests to `/`, `/workbench`, `/ledger`, and `/protocol` all return the SPA entry point with HTTP 200.
 
 ## Reproducible checks
 
