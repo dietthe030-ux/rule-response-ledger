@@ -2,6 +2,12 @@ import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
 
 export const PENDING_KEY = "rrl.pending.v1";
 
+export function prepareWrite(form, snapshot, setBusy) {
+  const data = snapshot(form);
+  setBusy(form, true);
+  return data;
+}
+
 export function assertFinalizedSuccess(receipt) {
   if (receipt?.statusName !== TransactionStatus.FINALIZED) {
     throw new Error(`Expected FINALIZED; received ${receipt?.statusName || "UNKNOWN"}.`);

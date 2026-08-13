@@ -1,6 +1,30 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { assertFinalizedSuccess, clearPending, readPending, storePending } from "../src/transactions.js";
+import {
+  assertFinalizedSuccess,
+  clearPending,
+  prepareWrite,
+  readPending,
+  storePending,
+} from "../src/transactions.js";
+
+test("write preparation snapshots enabled form fields before disabling controls", () => {
+  const calls = [];
+  const form = { disabled: false };
+  const data = prepareWrite(
+    form,
+    (current) => {
+      calls.push("snapshot");
+      return { commentId: current.disabled ? null : "EPA-R03-OAR-2025-0174-0066" };
+    },
+    (current, busy) => {
+      calls.push("disable");
+      current.disabled = busy;
+    },
+  );
+  assert.deepEqual(calls, ["snapshot", "disable"]);
+  assert.equal(data.commentId, "EPA-R03-OAR-2025-0174-0066");
+});
 
 function storage() {
   const values = new Map();

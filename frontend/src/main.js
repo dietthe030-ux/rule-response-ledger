@@ -22,7 +22,7 @@ import {
   walletUiState,
   watchProvider,
 } from "./wallet.js";
-import { assertFinalizedSuccess, clearPending, readPending } from "./transactions.js";
+import { assertFinalizedSuccess, clearPending, prepareWrite, readPending } from "./transactions.js";
 import { TransactionStatus } from "genlayer-js/types";
 
 const contractAddress = (import.meta.env.VITE_CONTRACT_ADDRESS || "").trim();
@@ -292,9 +292,9 @@ async function reconcilePending(pending) {
 async function handleWrite(form, action, successMessage) {
   try {
     requireWriteReady();
-    setBusy(form, true);
+    const data = prepareWrite(form, (current) => new FormData(current), setBusy);
     setNotice("Transaction submitted. Waiting for FINALIZED consensus…");
-    const result = await action(new FormData(form));
+    const result = await action(data);
     renderPending();
     await refreshRecords();
     setNotice(`${successMessage} Transaction ${short(result.hash)}.`);
