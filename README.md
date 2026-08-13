@@ -108,7 +108,7 @@ The deployment is finalized, its execution succeeded, deployed-source readback m
 ## Known limitations
 
 - The MVP is fixed to one EPA docket and its canonical final record.
-- The only live record is the documented verification record `RRL-000001`.
+- The live state contains the Studio verification record `RRL-000001` and the guided user-wallet verification record `RRL-000002`.
 - During live testing, the official Regulations.gov download host returned CloudFront `403`; the contract correctly recorded `UNRESOLVED / UNKNOWN / EVIDENCE_UNAVAILABLE` rather than a substantive policy conclusion.
 - The project does not determine legality, compel an agency response, or transfer real funds.
 - Upgrade recovery depends on continued access to the recorded Studio account and surviving Studionet state.
