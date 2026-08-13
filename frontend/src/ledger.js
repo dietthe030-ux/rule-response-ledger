@@ -7,7 +7,7 @@ export const FINAL_NUMBER = "2025-12527";
 export const FINAL_URL = "https://public-inspection.federalregister.gov/2025-12527.pdf";
 export const RESPONSE_ID = `${DOCKET_ID}-0076`;
 export const RESPONSE_URL = `https://downloads.regulations.gov/${RESPONSE_ID}/content.pdf`;
-export const EXPLORER = studionet.blockExplorers.default.url;
+export const EXPLORER = "https://explorer-studio.genlayer.com";
 
 export function validContractAddress(value) {
   return /^0x[a-fA-F0-9]{40}$/.test(value || "");

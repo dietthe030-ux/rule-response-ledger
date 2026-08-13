@@ -1,9 +1,9 @@
-const STUDIO_CHAIN = {
+export const STUDIO_CHAIN = {
   chainId: "0xf22f",
   chainName: "Genlayer Studio Network",
   nativeCurrency: { name: "GEN Token", symbol: "GEN", decimals: 18 },
   rpcUrls: ["https://studio.genlayer.com/api"],
-  blockExplorerUrls: ["https://genlayer-explorer.vercel.app"],
+  blockExplorerUrls: ["https://explorer-studio.genlayer.com"],
 };
 
 export function providerKey(detail) {
@@ -59,4 +59,24 @@ export async function ensureStudionet(provider) {
     await provider.request({ method: "wallet_addEthereumChain", params: [STUDIO_CHAIN] });
     await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: STUDIO_CHAIN.chainId }] });
   }
+}
+
+export function watchProvider(provider, onState) {
+  const accountsChanged = (accounts) => onState({
+    type: accounts?.[0] ? "account" : "disconnect",
+    address: accounts?.[0] || null,
+  });
+  const chainChanged = (chainId) => onState({
+    type: chainId?.toLowerCase() === STUDIO_CHAIN.chainId ? "studionet" : "wrong-chain",
+    chainId,
+  });
+  const disconnected = () => onState({ type: "disconnect", address: null });
+  provider.on?.("accountsChanged", accountsChanged);
+  provider.on?.("chainChanged", chainChanged);
+  provider.on?.("disconnect", disconnected);
+  return () => {
+    provider.removeListener?.("accountsChanged", accountsChanged);
+    provider.removeListener?.("chainChanged", chainChanged);
+    provider.removeListener?.("disconnect", disconnected);
+  };
 }

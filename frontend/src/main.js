@@ -15,13 +15,14 @@ import {
   registerRecord,
   validContractAddress,
 } from "./ledger.js";
-import { connectSelectedProvider, discoverProviders } from "./wallet.js";
+import { connectSelectedProvider, discoverProviders, watchProvider } from "./wallet.js";
 import { assertFinalizedSuccess, clearPending, readPending } from "./transactions.js";
 import { TransactionStatus } from "genlayer-js/types";
 
 const contractAddress = (import.meta.env.VITE_CONTRACT_ADDRESS || "").trim();
 const deployed = validContractAddress(contractAddress);
 let wallet = null;
+let stopWatchingWallet = () => {};
 let providers = [];
 let records = [];
 
@@ -168,6 +169,31 @@ function requireWriteReady() {
   if (!deployed) throw new Error("The contract has not been deployed yet.");
   if (!wallet) throw new Error("Choose and connect a wallet provider first.");
 }
+function clearWallet(message) {
+  stopWatchingWallet();
+  stopWatchingWallet = () => {};
+  wallet = null;
+  walletButton.textContent = "Connect wallet";
+  setNotice(message, true);
+  renderPending();
+}
+function followWallet(nextWallet) {
+  stopWatchingWallet();
+  wallet = nextWallet;
+  stopWatchingWallet = watchProvider(wallet.provider, (state) => {
+    if (state.type === "account") {
+      wallet = { ...wallet, address: state.address };
+      walletButton.textContent = short(state.address);
+      setNotice("Wallet account changed. Current identity updated.");
+    } else if (state.type === "studionet") {
+      clearWallet("Wallet returned to Studionet. Reconnect to authorize writes.");
+    } else if (state.type === "wrong-chain") {
+      clearWallet("Wallet left Studionet. Switch back and reconnect before writing.");
+    } else {
+      clearWallet("Wallet disconnected. Reconnect before writing.");
+    }
+  });
+}
 function setBusy(form, busy) {
   form.querySelectorAll("button, input, textarea").forEach((element) => { element.disabled = busy; });
 }
@@ -187,7 +213,7 @@ function renderProviders() {
     button.addEventListener("click", async () => {
       try {
         button.disabled = true;
-        wallet = await connectSelectedProvider(detail);
+        followWallet(await connectSelectedProvider(detail));
         walletButton.textContent = short(wallet.address);
         providerDialog.close();
         setNotice(`Connected ${detail.info?.name || "wallet"} on Studionet.`);

@@ -1,6 +1,14 @@
 import atexit
 import os
+import tempfile
 from pathlib import Path
+
+
+_task_tmp = Path(__file__).parents[1] / ".tmp"
+_task_tmp.mkdir(exist_ok=True)
+os.environ["TEMP"] = str(_task_tmp)
+os.environ["TMP"] = str(_task_tmp)
+tempfile.tempdir = str(_task_tmp)
 
 from gltest.direct import sdk_loader
 
@@ -14,9 +22,6 @@ sdk_loader.CACHE_DIR = tools_root / "GenVM" / "v0.3.0-rc7"
 # duplicated handle. Defer deletion until process exit without editing the
 # installed dependency.
 _unlink = os.unlink
-_task_tmp = Path(__file__).parents[1] / ".tmp"
-
-
 def _unlink_after_stdin_release(path) -> None:
     try:
         _unlink(path)
