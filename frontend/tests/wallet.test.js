@@ -4,12 +4,14 @@ import {
   collectProvider,
   discoverProviders,
   providerKey,
+  shortValue,
   STUDIO_CHAIN,
   walletUiState,
   watchProvider,
 } from "../src/wallet.js";
 
 test("wallet UI exposes disconnect only for an active app connection", () => {
+  assert.equal(shortValue("0x1234567890"), "0x1234…7890");
   assert.deepEqual(walletUiState(null), {
     disconnectVisible: false,
     triggerLabel: "Connect wallet",

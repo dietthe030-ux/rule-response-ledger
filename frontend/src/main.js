@@ -15,7 +15,13 @@ import {
   registerRecord,
   validContractAddress,
 } from "./ledger.js";
-import { connectSelectedProvider, discoverProviders, walletUiState, watchProvider } from "./wallet.js";
+import {
+  connectSelectedProvider,
+  discoverProviders,
+  shortValue as short,
+  walletUiState,
+  watchProvider,
+} from "./wallet.js";
 import { assertFinalizedSuccess, clearPending, readPending } from "./transactions.js";
 import { TransactionStatus } from "genlayer-js/types";
 
