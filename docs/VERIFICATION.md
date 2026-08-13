@@ -12,14 +12,13 @@ This document consolidates reviewer-facing source, deployment, test, and live-pa
 - Deployer/upgrader: `0x3851587431CfD3e46D1eAa77c0aDc2AD35087040`
 - Live web URL: [`https://rule-response-ledger.vercel.app`](https://rule-response-ledger.vercel.app)
 - Vercel project: `dietthe030-uxs-projects/rule-response-ledger`
-- Production deployment: `dpl_BDhHNz4V6k9defuiwvSeR65q8XDF`
-- Immutable deployment URL: `https://rule-response-ledger-pfwfh2z11-dietthe030-uxs-projects.vercel.app`
+- Current public release identity: stable alias `https://rule-response-ledger.vercel.app`
 - Compiled main asset: `/assets/index-eY1blzPn.js`
 - Compiled main asset SHA-256: `2C35FC1B3CC4ED79CDCC19DA0AEEBEB8C049FF0C3464F594C9D7389732C64DE0`
 
 The public release commit is the branch tip named in the pre-push and final immutable evidence packages. Embedding that commit's own hash inside itself would be self-referential; the deployed contract remains byte-bound to the implementation commit and source hash above.
 
-The production deployment is `READY`. Its stable alias and immutable URL serve the same compiled asset byte-for-byte as the verified local production build (398,904 bytes), contain the main contract address and explicit app-level disconnect flow, and exclude the isolated rehearsal address. Registration fields start empty; placeholders are non-submittable guidance, and a canonical attachment URL appears only for a valid user-entered comment ID. Pending writes show an immediate spinner, retain the original transaction hash, retry transient RPC/rate-limit failures without replay, and clear only after finality, successful execution, and authoritative readback. Fresh requests to `/`, `/workbench`, `/ledger`, and `/protocol` all return the SPA entry point with HTTP 200.
+The production deployment is `READY`. The public stable alias serves the compiled asset byte-for-byte equal to the verified local production build (398,904 bytes), contains the main contract address and explicit app-level disconnect flow, and excludes the isolated rehearsal address. Exact Vercel deployment IDs are retained in the external immutable review package instead of this source-controlled document, avoiding a deployment-ID self-reference loop. Vercel's deployment-specific URL may require authenticated team access; public smoke and asset-parity claims use only the stable alias. Registration fields start empty; placeholders are non-submittable guidance, and a canonical attachment URL appears only for a valid user-entered comment ID. Pending writes show an immediate spinner, retain the original transaction hash, retry transient RPC/rate-limit failures without replay, and clear only after finality, successful execution, and authoritative readback. Fresh requests to `/`, `/workbench`, `/ledger`, and `/protocol` all return the SPA entry point with HTTP 200.
 
 ## Reproducible checks
 
