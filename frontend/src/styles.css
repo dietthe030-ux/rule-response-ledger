@@ -7,6 +7,7 @@ a { color: var(--federal); text-underline-offset: 0.2em; }
 button, input, textarea { font: inherit; }
 button, .button { border: 1px solid var(--federal-dark); border-radius: 2px; background: var(--federal); color: #fff; padding: 0.65rem 0.85rem; cursor: pointer; font-weight: 700; }
 button:hover { background: var(--federal-dark); }
+button:active:not(:disabled) { transform: translateY(2px); }
 button:disabled { cursor: not-allowed; opacity: 0.48; }
 button.secondary { background: transparent; color: var(--federal-dark); }
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }

@@ -354,18 +354,30 @@ function renderRecords() {
 }
 
 async function refreshRecords() {
-  if (!deployed) { records = []; renderRecords(); return; }
+  if (!deployed) { records = []; renderRecords(); return true; }
   try {
     records = await readRecords(contractAddress);
     renderRecords();
+    return true;
   } catch (error) {
     records = [];
     renderRecords();
     setNotice(`Public read failed: ${error.message || error}`, true);
+    return false;
   }
 }
 
-document.querySelector("#refresh-button").addEventListener("click", refreshRecords);
+document.querySelector("#refresh-button").addEventListener("click", async (event) => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  button.textContent = "Refreshing…";
+  try {
+    if (await refreshRecords()) setNotice("Public state refreshed.");
+  } finally {
+    button.textContent = "Refresh state";
+    button.disabled = false;
+  }
+});
 document.querySelectorAll("[data-write]").forEach((button) => { button.disabled = !deployed; });
 renderPending();
 refreshRecords();
