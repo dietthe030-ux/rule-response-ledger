@@ -31,6 +31,7 @@ let wallet = null;
 let stopWatchingWallet = () => {};
 let providers = [];
 let records = [];
+let reconciliation = null;
 
 const app = document.querySelector("#app");
 app.innerHTML = `
@@ -262,7 +263,13 @@ function renderPending() {
   if (!pending) { slot.innerHTML = ""; return; }
   slot.innerHTML = `<aside class="pending"><strong>Pending intent: ${escapeHtml(pending.method)}</strong><br><code>${escapeHtml(pending.hash || "No transaction hash recorded")}</code><div class="form-actions"><button id="reconcile-button" type="button" ${!pending.hash || !deployed ? "disabled" : ""}>Reconcile finalized state</button><button class="secondary" id="dismiss-pending" type="button">Dismiss local intent</button></div></aside>`;
   document.querySelector("#dismiss-pending").addEventListener("click", () => { clearPending(); renderPending(); });
-  document.querySelector("#reconcile-button")?.addEventListener("click", () => reconcilePending(pending));
+  document.querySelector("#reconcile-button")?.addEventListener("click", () => startReconciliation(pending));
+  startReconciliation(pending);
+}
+
+function startReconciliation(pending) {
+  if (reconciliation || !pending?.hash || !deployed) return;
+  reconciliation = reconcilePending(pending).finally(() => { reconciliation = null; });
 }
 
 async function reconcilePending(pending) {

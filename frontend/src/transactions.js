@@ -1,4 +1,4 @@
-import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
+import { ExecutionResult, TransactionStatus, transactionsStatusNumberToName } from "genlayer-js/types";
 
 export const PENDING_KEY = "rrl.pending.v1";
 
@@ -9,14 +9,21 @@ export function prepareWrite(form, snapshot, setBusy) {
 }
 
 export function assertFinalizedSuccess(receipt) {
-  if (receipt?.statusName !== TransactionStatus.FINALIZED) {
-    throw new Error(`Expected FINALIZED; received ${receipt?.statusName || "UNKNOWN"}.`);
+  const status = receipt?.statusName
+    || receipt?.status_name
+    || transactionsStatusNumberToName[receipt?.status];
+  if (status !== TransactionStatus.FINALIZED) {
+    throw new Error(`Expected FINALIZED; received ${status || "UNKNOWN"}.`);
   }
-  if (receipt?.consensus_data?.final !== true) {
+  if ("final" in (receipt?.consensus_data || {}) && receipt.consensus_data.final !== true) {
     throw new Error("Receipt is not marked final by consensus.");
   }
-  if (receipt?.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
-    throw new Error(`Execution did not finish with a return: ${receipt?.txExecutionResultName || "UNKNOWN"}.`);
+  const leader = receipt?.consensus_data?.leader_receipt?.[0];
+  const execution = receipt?.txExecutionResultName || leader?.result?.status;
+  const succeeded = execution === ExecutionResult.FINISHED_WITH_RETURN
+    || (leader?.execution_result === "SUCCESS" && execution === "return");
+  if (!succeeded) {
+    throw new Error(`Execution did not finish with a return: ${execution || "UNKNOWN"}.`);
   }
   return receipt;
 }

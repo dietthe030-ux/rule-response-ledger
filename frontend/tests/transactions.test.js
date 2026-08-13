@@ -34,9 +34,16 @@ function storage() {
 test("requires final consensus and successful leader execution", () => {
   const receipt = { statusName: "FINALIZED", consensus_data: { final: true }, txExecutionResultName: "FINISHED_WITH_RETURN" };
   assert.equal(assertFinalizedSuccess(receipt), receipt);
+  const currentSdkReceipt = {
+    status: 7,
+    status_name: "FINALIZED",
+    consensus_data: { leader_receipt: [{ execution_result: "SUCCESS", result: { status: "return" } }] },
+  };
+  assert.equal(assertFinalizedSuccess(currentSdkReceipt), currentSdkReceipt);
   assert.throws(() => assertFinalizedSuccess({ ...receipt, statusName: "ACCEPTED" }), /FINALIZED/);
   assert.throws(() => assertFinalizedSuccess({ ...receipt, consensus_data: { final: false } }), /not marked final/);
   assert.throws(() => assertFinalizedSuccess({ ...receipt, txExecutionResultName: "FINISHED_WITH_ERROR" }), /did not finish/);
+  assert.throws(() => assertFinalizedSuccess({ ...currentSdkReceipt, consensus_data: { leader_receipt: [{ execution_result: "ERROR", result: { status: "error" } }] } }), /did not finish/);
 });
 
 test("pending intent persists and clears", () => {
