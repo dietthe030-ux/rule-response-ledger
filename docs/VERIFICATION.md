@@ -4,15 +4,21 @@ This document consolidates reviewer-facing source, deployment, test, and live-pa
 
 ## Exact source boundary
 
-- Reviewed implementation/configuration commit: `342f87283f2e4691dfafe3e0ed84eb67f8e48c9b`
+- Reviewed implementation/configuration commit: `5d8632fe9600336f7ace3a493545f2064cbb890b`
 - Contract source SHA-256: `EDEB1E2690FCA5F4CE6B82D4035CF1A29CB7C6587FF3423108BF523126D34571`
 - Network: Studionet, chain ID `61999`
 - Main contract: [`0x18E2134c1b2D93170Aa35599a891F3785bB91f0a`](https://explorer-studio.genlayer.com/address/0x18E2134c1b2D93170Aa35599a891F3785bB91f0a)
 - Deployment transaction: [`0x638d99b15edae6cf2d86a345c5964d5621caf1e1081c002c72b3ee1ce199adf1`](https://explorer-studio.genlayer.com/tx/0x638d99b15edae6cf2d86a345c5964d5621caf1e1081c002c72b3ee1ce199adf1)
 - Deployer/upgrader: `0x3851587431CfD3e46D1eAa77c0aDc2AD35087040`
-- Live web URL: pending the separately authorized Vercel deployment
+- Live web URL: [`https://rule-response-ledger.vercel.app`](https://rule-response-ledger.vercel.app)
+- Vercel project: `dietthe030-uxs-projects/rule-response-ledger`
+- Production deployment: `dpl_FHLF6Fcs1Wvtwk3tz4EKv2kNPSni`
+- Immutable deployment URL: `https://rule-response-ledger-gtdhk8mey-dietthe030-uxs-projects.vercel.app`
+- Compiled main asset SHA-256: `24D8084BB4483FC2FF9B468FB3CCB6578B21652B7190441F3E0E793845087829`
 
 The public release commit is the branch tip named in the pre-push and final immutable evidence packages. Embedding that commit's own hash inside itself would be self-referential; the deployed contract remains byte-bound to the implementation commit and source hash above.
+
+The production deployment is `READY`. Its stable alias and immutable URL serve the same compiled asset byte-for-byte as the verified local production build (396,981 bytes), contain the main contract address, and exclude the isolated rehearsal address. Fresh requests to `/`, `/workbench`, `/ledger`, and `/protocol` all return the SPA entry point with HTTP 200.
 
 ## Reproducible checks
 
@@ -53,4 +59,4 @@ The assessment outcome is a verified fail-safe availability result. The Regulati
 - The current live state contains one verification record.
 - Official-source availability can produce a safe `UNRESOLVED` result.
 - The product is not legal advice, does not determine lawfulness, and transfers no real funds.
-- Vercel and browser evidence remain pending until the separately authorized hosted deployment.
+- The hosted build is verified, but final completion still requires the user's guided wallet test and matching dual approval.

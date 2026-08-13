@@ -6,7 +6,7 @@ Rule Response Ledger is a GenLayer dApp that records a material issue from a pub
 
 - [Studionet contract](https://explorer-studio.genlayer.com/address/0x18E2134c1b2D93170Aa35599a891F3785bB91f0a)
 - [Deployment transaction](https://explorer-studio.genlayer.com/tx/0x638d99b15edae6cf2d86a345c5964d5621caf1e1081c002c72b3ee1ce199adf1)
-- Live app: pending the separately authorized Vercel deployment
+- [Live app](https://rule-response-ledger.vercel.app)
 - [Verification evidence](docs/VERIFICATION.md)
 
 The MVP covers EPA docket [`EPA-R03-OAR-2025-0174`](https://www.regulations.gov/docket/EPA-R03-OAR-2025-0174). It is an evidence-navigation tool, not legal advice or a conclusion about whether an agency action is lawful.
@@ -92,6 +92,7 @@ The linter wrapper uses the governed GenVM runtime under `E:\Genlayer-Tools`; it
 - Deployment transaction: `0x638d99b15edae6cf2d86a345c5964d5621caf1e1081c002c72b3ee1ce199adf1`
 - Contract source SHA-256: `EDEB1E2690FCA5F4CE6B82D4035CF1A29CB7C6587FF3423108BF523126D34571`
 - Deployer/upgrader: `0x3851587431CfD3e46D1eAa77c0aDc2AD35087040`
+- Live app: `https://rule-response-ledger.vercel.app`
 
 The deployment is finalized, its execution succeeded, deployed-source readback matches the reviewed source hash, and an isolated exact-source rehearsal verified the public upgrade authorization path. Studio account loss or a Studionet reset requires a replacement deployment and complete re-verification; the old address must not be represented as recoverable.
 
@@ -111,4 +112,3 @@ The deployment is finalized, its execution succeeded, deployed-source readback m
 - During live testing, the official Regulations.gov download host returned CloudFront `403`; the contract correctly recorded `UNRESOLVED / UNKNOWN / EVIDENCE_UNAVAILABLE` rather than a substantive policy conclusion.
 - The project does not determine legality, compel an agency response, or transfer real funds.
 - Upgrade recovery depends on continued access to the recorded Studio account and surviving Studionet state.
-- The live Vercel URL will be added only after the user-authorized deployment is verified.
