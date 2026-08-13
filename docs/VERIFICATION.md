@@ -12,13 +12,13 @@ This document consolidates reviewer-facing source, deployment, test, and live-pa
 - Deployer/upgrader: `0x3851587431CfD3e46D1eAa77c0aDc2AD35087040`
 - Live web URL: [`https://rule-response-ledger.vercel.app`](https://rule-response-ledger.vercel.app)
 - Vercel project: `dietthe030-uxs-projects/rule-response-ledger`
-- Production deployment: `dpl_6vom9ayne2ATkzajorN1CtnCmz3K`
-- Immutable deployment URL: `https://rule-response-ledger-9x8ois017-dietthe030-uxs-projects.vercel.app`
-- Compiled main asset SHA-256: `9EFFB9AEF8A7FEDDFAF2A50FC82E97D16C81B2D726F3B8ECC5387F68B3B7B998`
+- Production deployment: `dpl_nFAPNWSSTR5NidUYcVmLkqMcn5AD`
+- Immutable deployment URL: `https://rule-response-ledger-su95yz5nz-dietthe030-uxs-projects.vercel.app`
+- Compiled main asset SHA-256: `ECB9DD727663A6B4864D8E7D51F69F2EAE91276F07ADE76BAF7F7FB3C1019DE4`
 
 The public release commit is the branch tip named in the pre-push and final immutable evidence packages. Embedding that commit's own hash inside itself would be self-referential; the deployed contract remains byte-bound to the implementation commit and source hash above.
 
-The production deployment is `READY`. Its stable alias and immutable URL serve the same compiled asset byte-for-byte as the verified local production build (397,221 bytes), contain the main contract address, and exclude the isolated rehearsal address. Fresh requests to `/`, `/workbench`, `/ledger`, and `/protocol` all return the SPA entry point with HTTP 200.
+The production deployment is `READY`. Its stable alias and immutable URL serve the same compiled asset byte-for-byte as the verified local production build (397,625 bytes), contain the main contract address and explicit app-level disconnect flow, and exclude the isolated rehearsal address. Fresh requests to `/`, `/workbench`, `/ledger`, and `/protocol` all return the SPA entry point with HTTP 200.
 
 ## Reproducible checks
 
@@ -33,7 +33,7 @@ npm run build
 npm audit --omit=dev --audit-level=high
 ```
 
-Current pre-push results: GenVM lint/validation `3/3`, contract tests `1/1`, frontend tests `14/14`, Vite production build passed with 453 modules, and the high-severity production dependency audit reported zero vulnerabilities. The wallet matrix covers EIP-6963/legacy deduplication in either announcement order while retaining genuinely distinct EIP-6963 instances. Desktop and 390×844 browser checks found no console errors, horizontal overflow, or wallet auto-connection; the public Studionet record loaded after authoritative readback.
+Current pre-push results: GenVM lint/validation `3/3`, contract tests `1/1`, frontend tests `15/15`, Vite production build passed with 453 modules, and the high-severity production dependency audit reported zero vulnerabilities. The wallet matrix covers EIP-6963/legacy deduplication in either announcement order, genuinely distinct EIP-6963 instances, and connected/disconnected UI state. Desktop and 390×844 browser checks found no console errors, horizontal overflow, or wallet auto-connection; the public Studionet record loaded after authoritative readback.
 
 ## Deployment and source parity
 
