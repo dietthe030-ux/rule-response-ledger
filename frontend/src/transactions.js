@@ -44,6 +44,12 @@ export function clearPending(storage = localStorage) {
   storage.removeItem(PENDING_KEY);
 }
 
+export function isRetryableRpcError(error) {
+  const text = [error?.message, error?.shortMessage, error?.details, error?.cause?.message]
+    .filter(Boolean).join(" ");
+  return /failed to fetch|rate limit|rpc error|network|timed? out|timeout/i.test(text);
+}
+
 export async function submitFinalized({ client, call, intent, readback }) {
   const pending = { ...intent, startedAt: new Date().toISOString(), hash: null };
   storePending(pending);
@@ -52,8 +58,8 @@ export async function submitFinalized({ client, call, intent, readback }) {
   const receipt = assertFinalizedSuccess(await client.waitForTransactionReceipt({
     hash,
     status: TransactionStatus.FINALIZED,
-    interval: 3_000,
-    retries: 120,
+    interval: 6_000,
+    retries: 60,
   }));
   const state = await readback(receipt);
   clearPending();

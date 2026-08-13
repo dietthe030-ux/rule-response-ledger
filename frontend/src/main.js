@@ -22,7 +22,7 @@ import {
   walletUiState,
   watchProvider,
 } from "./wallet.js";
-import { assertFinalizedSuccess, clearPending, prepareWrite, readPending } from "./transactions.js";
+import { assertFinalizedSuccess, clearPending, isRetryableRpcError, prepareWrite, readPending } from "./transactions.js";
 import { TransactionStatus } from "genlayer-js/types";
 
 const contractAddress = (import.meta.env.VITE_CONTRACT_ADDRESS || "").trim();
@@ -261,7 +261,7 @@ function renderPending() {
   const slot = document.querySelector("#pending-slot");
   const pending = readPending();
   if (!pending) { slot.innerHTML = ""; return; }
-  slot.innerHTML = `<aside class="pending"><strong>Pending intent: ${escapeHtml(pending.method)}</strong><br><code>${escapeHtml(pending.hash || "No transaction hash recorded")}</code><div class="form-actions"><button id="reconcile-button" type="button" ${!pending.hash || !deployed ? "disabled" : ""}>Reconcile finalized state</button><button class="secondary" id="dismiss-pending" type="button">Dismiss local intent</button></div></aside>`;
+  slot.innerHTML = `<aside class="pending" role="status"><div class="pending-title"><span class="spinner" aria-hidden="true"></span><strong>Pending intent: ${escapeHtml(pending.method)}</strong></div><code>${escapeHtml(pending.hash || "No transaction hash recorded")}</code><div class="form-actions"><button id="reconcile-button" type="button" ${!pending.hash || !deployed ? "disabled" : ""}>Reconcile finalized state</button><button class="secondary" id="dismiss-pending" type="button">Dismiss local intent</button></div></aside>`;
   document.querySelector("#dismiss-pending").addEventListener("click", () => { clearPending(); renderPending(); });
   document.querySelector("#reconcile-button")?.addEventListener("click", () => startReconciliation(pending));
   startReconciliation(pending);
@@ -273,28 +273,38 @@ function startReconciliation(pending) {
 }
 
 async function reconcilePending(pending) {
-  try {
-    setNotice("Checking the recorded transaction and authoritative state…");
-    const receipt = assertFinalizedSuccess(await publicClient.waitForTransactionReceipt({
-      hash: pending.hash,
-      status: TransactionStatus.FINALIZED,
-      interval: 3_000,
-      retries: 40,
-    }));
-    if (pending.recordId) await readRecord(contractAddress, pending.recordId);
-    if (pending.commentId) {
-      const recordId = await publicClient.readContract({
-        address: contractAddress,
-        functionName: "get_record_by_fingerprint",
-        args: [pending.commentId, pending.issueSummary],
-      });
-      await readRecord(contractAddress, recordId);
+  while (readPending()?.hash === pending.hash) {
+    try {
+      setNotice("Checking the recorded transaction and authoritative state…");
+      const receipt = assertFinalizedSuccess(await publicClient.waitForTransactionReceipt({
+        hash: pending.hash,
+        status: TransactionStatus.FINALIZED,
+        interval: 6_000,
+        retries: 60,
+      }));
+      if (pending.recordId) await readRecord(contractAddress, pending.recordId);
+      if (pending.commentId) {
+        const recordId = await publicClient.readContract({
+          address: contractAddress,
+          functionName: "get_record_by_fingerprint",
+          args: [pending.commentId, pending.issueSummary],
+        });
+        await readRecord(contractAddress, recordId);
+      }
+      clearPending();
+      renderPending();
+      await refreshRecords();
+      setNotice(`Reconciled finalized transaction ${short(receipt.hash || pending.hash)}.`);
+      return;
+    } catch (error) {
+      if (!isRetryableRpcError(error)) {
+        setNotice(error.message || "Reconciliation failed.", true);
+        return;
+      }
+      setNotice("Studionet RPC is temporarily unavailable. Retrying automatically in 15 seconds…", true);
+      await new Promise((resolve) => setTimeout(resolve, 15_000));
     }
-    clearPending();
-    renderPending();
-    await refreshRecords();
-    setNotice(`Reconciled finalized transaction ${short(receipt.hash || pending.hash)}.`);
-  } catch (error) { setNotice(error.message || "Reconciliation failed.", true); }
+  }
 }
 
 async function handleWrite(form, action, successMessage) {

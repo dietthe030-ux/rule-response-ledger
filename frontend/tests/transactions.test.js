@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   assertFinalizedSuccess,
   clearPending,
+  isRetryableRpcError,
   prepareWrite,
   readPending,
   storePending,
@@ -52,4 +53,10 @@ test("pending intent persists and clears", () => {
   assert.deepEqual(readPending(fake), { method: "register_record", hash: null });
   clearPending(fake);
   assert.equal(readPending(fake), null);
+});
+
+test("only transient RPC failures are retried", () => {
+  assert.equal(isRetryableRpcError(new Error("Failed to fetch")), true);
+  assert.equal(isRetryableRpcError({ message: "unknown", cause: new Error("Rate limit exceeded") }), true);
+  assert.equal(isRetryableRpcError(new Error("Execution did not finish with a return")), false);
 });

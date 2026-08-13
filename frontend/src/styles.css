@@ -54,6 +54,10 @@ textarea { min-height: 7.5rem; resize: vertical; }
 .protocol-grid article { border-top: 3px solid var(--ink); padding-top: var(--space-4); }
 .protocol-grid ul { padding-left: 1.1rem; }
 .pending { border-left: 4px solid var(--signal); padding: var(--space-4); background: #eee3d6; margin-bottom: var(--space-6); }
+.pending-title { display: flex; align-items: center; gap: .65rem; margin-bottom: .25rem; }
+.spinner { width: .85rem; height: .85rem; flex: 0 0 auto; border: 2px solid var(--signal); border-top-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2s; } }
 .pending code, code { font-family: var(--mono); overflow-wrap: anywhere; }
 .notice { min-height: 1.5rem; margin: var(--space-4) 0 0; color: var(--federal-dark); font-weight: 700; }
 .colophon { background: var(--ink); color: var(--paper); }
