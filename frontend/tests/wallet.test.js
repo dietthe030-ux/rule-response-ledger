@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { collectProvider, providerKey, STUDIO_CHAIN, watchProvider } from "../src/wallet.js";
+import { collectProvider, discoverProviders, providerKey, STUDIO_CHAIN, watchProvider } from "../src/wallet.js";
 
 test("provider announcements deduplicate without preferring MetaMask", () => {
   const first = { info: { uuid: "one", name: "Wallet A" }, provider: { request() {} } };
@@ -17,6 +17,31 @@ test("the same provider object is not listed twice under legacy metadata", () =>
   const map = collectProvider(new Map(), { info: { uuid: "eip" }, provider });
   collectProvider(map, { info: { uuid: "legacy" }, provider });
   assert.equal(map.size, 1);
+});
+
+test("provider discovery never requests an account on page load", () => {
+  const originalWindow = globalThis.window;
+  let requests = 0;
+  const listeners = new Map();
+  globalThis.window = {
+    ethereum: { request() { requests += 1; } },
+    addEventListener(event, listener) { listeners.set(event, listener); },
+    removeEventListener(event, listener) {
+      if (listeners.get(event) === listener) listeners.delete(event);
+    },
+    dispatchEvent() {},
+  };
+  try {
+    const snapshots = [];
+    const stop = discoverProviders((providers) => snapshots.push(providers));
+    assert.equal(requests, 0);
+    assert.equal(snapshots.at(-1).length, 1);
+    stop();
+    assert.equal(listeners.size, 0);
+  } finally {
+    if (originalWindow === undefined) delete globalThis.window;
+    else globalThis.window = originalWindow;
+  }
 });
 
 test("Studionet metadata uses the current official explorer", () => {
