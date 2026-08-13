@@ -11,9 +11,29 @@ export function providerKey(detail) {
   return info.uuid || info.rdns || info.name || "legacy-provider";
 }
 
+function isLegacy(detail) {
+  return detail.info?.uuid?.startsWith("legacy-") || false;
+}
+
+function providerRdns(detail) {
+  return detail.info?.rdns?.trim().toLowerCase() || "";
+}
+
 export function collectProvider(map, detail) {
   if (!detail?.provider?.request) return map;
-  if ([...map.values()].some((existing) => existing.provider === detail.provider)) return map;
+  const rdns = providerRdns(detail);
+  const duplicate = [...map.entries()].find(([, existing]) => (
+    existing.provider === detail.provider
+    || (rdns && providerRdns(existing) === rdns && (isLegacy(existing) || isLegacy(detail)))
+  ));
+  if (duplicate) {
+    const [existingKey, existing] = duplicate;
+    if (isLegacy(existing) && !isLegacy(detail)) {
+      map.delete(existingKey);
+      map.set(providerKey(detail), detail);
+    }
+    return map;
+  }
   const key = providerKey(detail);
   if (!map.has(key)) map.set(key, detail);
   return map;

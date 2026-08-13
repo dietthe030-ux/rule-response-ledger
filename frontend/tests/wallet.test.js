@@ -19,6 +19,28 @@ test("the same provider object is not listed twice under legacy metadata", () =>
   assert.equal(map.size, 1);
 });
 
+test("EIP-6963 metadata replaces the same wallet's legacy entry in either order", () => {
+  const legacy = {
+    info: { uuid: "legacy-0-metamask", name: "MetaMask", rdns: "io.metamask" },
+    provider: { request() {} },
+  };
+  const announced = {
+    info: { uuid: "announced-metamask", name: "MetaMask", rdns: "io.metamask" },
+    provider: { request() {} },
+  };
+  const announcedFirst = collectProvider(collectProvider(new Map(), announced), legacy);
+  const legacyFirst = collectProvider(collectProvider(new Map(), legacy), announced);
+  assert.deepEqual([...announcedFirst.values()], [announced]);
+  assert.deepEqual([...legacyFirst.values()], [announced]);
+});
+
+test("distinct EIP-6963 instances remain selectable even when rdns matches", () => {
+  const first = { info: { uuid: "one", rdns: "io.wallet" }, provider: { request() {} } };
+  const second = { info: { uuid: "two", rdns: "io.wallet" }, provider: { request() {} } };
+  const map = collectProvider(collectProvider(new Map(), first), second);
+  assert.equal(map.size, 2);
+});
+
 test("provider discovery never requests an account on page load", () => {
   const originalWindow = globalThis.window;
   let requests = 0;
