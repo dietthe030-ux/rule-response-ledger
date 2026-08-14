@@ -4,7 +4,7 @@ This document consolidates reviewer-facing source, deployment, test, and live-pa
 
 ## Exact source boundary
 
-- Deployed frontend implementation commit: `27936e2379d6d469fd1b3f9f98461d501763d159`
+- Deployed frontend implementation commit: `5f77b0038bfceeb4d6c0036b9e287ff47fbdedd2`
 - Contract source SHA-256: `EDEB1E2690FCA5F4CE6B82D4035CF1A29CB7C6587FF3423108BF523126D34571`
 - Network: Studionet, chain ID `61999`
 - Main contract: [`0x18E2134c1b2D93170Aa35599a891F3785bB91f0a`](https://explorer-studio.genlayer.com/address/0x18E2134c1b2D93170Aa35599a891F3785bB91f0a)
@@ -13,12 +13,12 @@ This document consolidates reviewer-facing source, deployment, test, and live-pa
 - Live web URL: [`https://rule-response-ledger.vercel.app`](https://rule-response-ledger.vercel.app)
 - Vercel project: `dietthe030-uxs-projects/rule-response-ledger`
 - Current public release identity: stable alias `https://rule-response-ledger.vercel.app`
-- Compiled main asset: `/assets/index-eY1blzPn.js`
-- Compiled main asset SHA-256: `2C35FC1B3CC4ED79CDCC19DA0AEEBEB8C049FF0C3464F594C9D7389732C64DE0`
+- Compiled main asset: `/assets/index-CZBn1epI.js`
+- Compiled main asset SHA-256: `CE5CDA41551964EE103A3A66B0DF876824FE1B3EDD8B6AA9CCF0398A5691F98C`
 
 The public release commit is the branch tip named in the pre-push and final immutable evidence packages. Embedding that commit's own hash inside itself would be self-referential; the deployed contract remains byte-bound to the implementation commit and source hash above.
 
-The production deployment is `READY`. The public stable alias serves the compiled asset byte-for-byte equal to the verified local production build (398,904 bytes), contains the main contract address and explicit app-level disconnect flow, and excludes the isolated rehearsal address. Exact Vercel deployment IDs are retained in the external immutable review package instead of this source-controlled document, avoiding a deployment-ID self-reference loop. Vercel's deployment-specific URL may require authenticated team access; public smoke and asset-parity claims use only the stable alias. Registration fields start empty; placeholders are non-submittable guidance, and a canonical attachment URL appears only for a valid user-entered comment ID. Pending writes show an immediate spinner, retain the original transaction hash, retry transient RPC/rate-limit failures without replay, and clear only after finality, successful execution, and authoritative readback. Fresh requests to `/`, `/workbench`, `/ledger`, and `/protocol` all return the SPA entry point with HTTP 200.
+The production deployment is `READY`. The public stable alias serves the compiled asset byte-for-byte equal to the verified local production build (399,876 bytes), contains the main contract address and explicit app-level disconnect flow, and excludes the isolated rehearsal address. Exact Vercel deployment IDs are retained in the external immutable review package instead of this source-controlled document, avoiding a deployment-ID self-reference loop. Vercel's deployment-specific URL may require authenticated team access; public smoke and asset-parity claims use only the stable alias. Registration fields start empty; placeholders are non-submittable guidance, and a canonical attachment URL appears only for a valid user-entered comment ID. Pending writes show an immediate spinner, retain the original transaction hash, retry transient RPC/rate-limit failures without replay, and clear only after finality, successful execution, and authoritative readback. The public Ledger loads every stored assessment through `get_revision` and exposes its revision ID, verdict, rationale, response source, and evidence digest without requiring a wallet. Fresh requests to `/`, `/workbench`, `/ledger`, and `/protocol` all return the SPA entry point with HTTP 200.
 
 ## Reproducible checks
 
@@ -33,7 +33,7 @@ npm run build
 npm audit --omit=dev --audit-level=high
 ```
 
-Current release results: GenVM lint/validation `3/3`, contract tests `1/1`, frontend tests `18/18`, Vite production build passed with 453 modules, and the high-severity production dependency audit reported zero vulnerabilities. The wallet matrix covers EIP-6963/legacy deduplication in either announcement order, genuinely distinct EIP-6963 instances, connected/disconnected UI state, current SDK receipt shapes, transient RPC retry classification, and immediate pending notifications before and after wallet hash return. Desktop and 390×844 browser checks found no console errors, horizontal overflow, or wallet auto-connection; both public Studionet records loaded after authoritative readback.
+Current release results: GenVM lint/validation `3/3`, contract tests `1/1`, frontend tests `19/19`, Vite production build passed with 453 modules, and the high-severity production dependency audit reported zero vulnerabilities. The added regression test drives the production `readRecords` path with two stored revisions, proves both `get_revision(record_id, index)` calls occur, and asserts that verdict, rationale, response source, and evidence digest are rendered with escaped content. The wallet matrix covers EIP-6963/legacy deduplication in either announcement order, genuinely distinct EIP-6963 instances, connected/disconnected UI state, current SDK receipt shapes, transient RPC retry classification, and immediate pending notifications before and after wallet hash return. Desktop and 390×844 browser checks found no console errors or wallet auto-connection; both public Studionet records and their existing revisions loaded through the public Ledger.
 
 ## Deployment and source parity
 
@@ -55,6 +55,12 @@ An isolated rehearsal contract verified `upgrade(new_code)` through a normal ful
 | Authorized upgrade rehearsal | [`0xc465…7d1`](https://explorer-studio.genlayer.com/tx/0xc46534893211c9b8e93a57a18825a649644e25f5babbb482798fcdeb9acc57d1) | `FINALIZED`, `Accepted`, GenVM `SUCCESS`, receipt `0x1` | Exact source hash and upgrader preserved on rehearsal contract |
 
 The assessment outcome is a verified fail-safe availability result. The Regulations.gov download host returned CloudFront `403`, so no substantive policy verdict is claimed.
+
+## Steward request closure
+
+| Steward request | Prior gap | Source and contract read path | Regression and live evidence |
+|---|---|---|---|
+| Let readers inspect an assessment revision's verdict, rationale, response source, and evidence digest. | The public Ledger loaded only `get_record`; `get_revision` was used only immediately after a new assessment write. | `readRecords` now enumerates `revision_count`, calls `get_revision(record_id, index)` for every stored revision, and renders the requested fields inline under the owning record. No contract or write-flow change was made. | Frontend test `public ledger loads every revision and renders its decision evidence` passes. The production stable alias loaded `RRL-000001-R01` and `RRL-000002-R01` from Studionet with all four requested fields and no browser console warnings or errors. |
 
 ## Known limitations
 
