@@ -48,8 +48,17 @@ textarea { min-height: 7.5rem; resize: vertical; }
 .records { border-top: 2px solid var(--ink); }
 .record { display: grid; grid-template-columns: 8rem minmax(0, 1fr) 11rem; gap: var(--space-6); border-bottom: 1px solid var(--line-strong); padding: var(--space-6) 0; }
 .record-id { font-family: var(--mono); font-weight: 700; }
+.record-body { min-width: 0; }
 .record-status { text-align: right; font: 700 0.75rem/1.3 var(--mono); letter-spacing: 0.04em; }
 .record-meta { color: var(--muted); font-size: 0.82rem; overflow-wrap: anywhere; }
+.record-revisions { display: grid; gap: var(--space-4); margin-top: var(--space-5); }
+.revision { border-left: 3px solid var(--federal); padding-left: var(--space-4); }
+.revision h4 { margin: 0 0 var(--space-3); font: 700 0.78rem/1.3 var(--mono); letter-spacing: 0.04em; }
+.revision-facts { display: grid; gap: var(--space-3); margin: 0; }
+.revision-facts div { display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: var(--space-3); }
+.revision-facts dt { color: var(--muted); font-size: 0.78rem; }
+.revision-facts dd { margin: 0; overflow-wrap: anywhere; }
+.revision-digest { font-family: var(--mono); font-size: 0.72rem; }
 .empty { padding: var(--space-8) 0; color: var(--muted); }
 .protocol-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-8); }
 .protocol-grid article { border-top: 3px solid var(--ink); padding-top: var(--space-4); }
@@ -84,6 +93,7 @@ dialog::backdrop { background: rgb(14 17 17 / 0.72); }
   .hero { min-height: auto; }
   .record { grid-template-columns: 1fr; gap: var(--space-2); }
   .record-status { text-align: left; }
+  .revision-facts div { grid-template-columns: 1fr; gap: var(--space-1); }
 }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

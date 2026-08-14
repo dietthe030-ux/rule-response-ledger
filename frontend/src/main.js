@@ -9,9 +9,11 @@ import {
   assessRecord,
   bindEvidence,
   canonicalCommentUrl,
+  escapeHtml,
   publicClient,
   readRecord,
   readRecords,
+  recordMarkup,
   registerRecord,
   validContractAddress,
 } from "./ledger.js";
@@ -166,11 +168,6 @@ const providerDialog = document.querySelector("#provider-dialog");
 const walletButton = document.querySelector("#wallet-button");
 const walletDisconnect = document.querySelector("#wallet-disconnect");
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
-  })[character]);
-}
 function setNotice(message, error = false) {
   notice.textContent = message;
   notice.style.color = error ? "var(--signal)" : "var(--federal-dark)";
@@ -346,12 +343,7 @@ function renderRecords() {
     return;
   }
   if (!records.length) { container.innerHTML = "<p class='empty'>No records have been registered.</p>"; return; }
-  container.innerHTML = records.map((record) => `
-    <article class="record">
-      <div class="record-id">${escapeHtml(record.record_id)}</div>
-      <div><h3>${escapeHtml(record.issue_summary)}</h3><p class="record-meta">${escapeHtml(record.comment_id)} · ${escapeHtml(record.revision_count)} revision(s) · follow-up ${escapeHtml(record.follow_up_status)}</p></div>
-      <div class="record-status">${escapeHtml(record.status)}${record.current_revision_id ? `<br>${escapeHtml(record.current_revision_id)}` : ""}</div>
-    </article>`).join("");
+  container.innerHTML = records.map(recordMarkup).join("");
 }
 
 async function refreshRecords() {

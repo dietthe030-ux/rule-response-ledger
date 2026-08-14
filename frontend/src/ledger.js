@@ -23,6 +23,12 @@ export function parseStoredJson(value) {
   return JSON.parse(value);
 }
 
+export function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
+  })[character]);
+}
+
 export const publicClient = createClient({ chain: studionet });
 
 export function walletClient(wallet) {
@@ -37,6 +43,21 @@ export async function readRecord(address, recordId, client = publicClient) {
   }));
 }
 
+export async function readRevision(address, recordId, index, client = publicClient) {
+  return parseStoredJson(await client.readContract({
+    address,
+    functionName: "get_revision",
+    args: [recordId, index],
+  }));
+}
+
+export async function readRevisions(address, record, client = publicClient) {
+  return Promise.all(Array.from(
+    { length: Number(record.revision_count) },
+    (_, index) => readRevision(address, record.record_id, index, client),
+  ));
+}
+
 export async function readRecords(address, client = publicClient) {
   const count = Number(await client.readContract({ address, functionName: "get_record_count", args: [] }));
   const ids = await Promise.all(Array.from({ length: count }, (_, index) => client.readContract({
@@ -44,7 +65,34 @@ export async function readRecords(address, client = publicClient) {
     functionName: "get_record_id",
     args: [index],
   })));
-  return Promise.all(ids.map((id) => readRecord(address, id, client)));
+  return Promise.all(ids.map(async (id) => {
+    const record = await readRecord(address, id, client);
+    return { ...record, revisions: await readRevisions(address, record, client) };
+  }));
+}
+
+export function recordMarkup(record) {
+  const revisions = (record.revisions || []).map((revision) => `
+    <section class="revision" aria-labelledby="${escapeHtml(revision.revision_id)}-title">
+      <h4 id="${escapeHtml(revision.revision_id)}-title">${escapeHtml(revision.revision_id)}</h4>
+      <dl class="revision-facts">
+        <div><dt>Verdict</dt><dd>${escapeHtml(revision.verdict)}</dd></div>
+        <div><dt>Rationale</dt><dd>${escapeHtml(revision.explanation)}</dd></div>
+        <div><dt>Response source</dt><dd>${escapeHtml(revision.response_source)}</dd></div>
+        <div><dt>Evidence digest</dt><dd class="revision-digest">${escapeHtml(revision.evidence_digest || "Not recorded")}</dd></div>
+      </dl>
+    </section>`).join("");
+
+  return `
+    <article class="record">
+      <div class="record-id">${escapeHtml(record.record_id)}</div>
+      <div class="record-body">
+        <h3>${escapeHtml(record.issue_summary)}</h3>
+        <p class="record-meta">${escapeHtml(record.comment_id)} · ${escapeHtml(record.revision_count)} revision(s) · follow-up ${escapeHtml(record.follow_up_status)}</p>
+        <div class="record-revisions">${revisions || "<p class='record-meta'>No assessment revision yet.</p>"}</div>
+      </div>
+      <div class="record-status">${escapeHtml(record.status)}${record.current_revision_id ? `<br>${escapeHtml(record.current_revision_id)}` : ""}</div>
+    </article>`;
 }
 
 export async function registerRecord(address, wallet, commentId, issueSummary, onPending) {
@@ -99,11 +147,7 @@ export async function assessRecord(address, wallet, recordId, onPending) {
       if (record.revision_count !== before.revision_count + 1) {
         throw new Error("Authoritative readback did not append exactly one revision.");
       }
-      const revision = parseStoredJson(await client.readContract({
-        address,
-        functionName: "get_revision",
-        args: [recordId, before.revision_count],
-      }));
+      const revision = await readRevision(address, recordId, before.revision_count, client);
       return { record, revision };
     },
   });
